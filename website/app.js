@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load Data from JSON
 async function loadData() {
     try {
-        const response = await fetch('data/sentiment_analysis.json');
+        const response = await fetch('data/sentiment_analysis.json?v=' + Date.now());
         
         if (!response.ok) {
             throw new Error('Data file not found. Run: npm run export-data');
@@ -350,9 +350,9 @@ function filterAndRender() {
 
     filteredTweets = allTweets.filter(tweet => {
         const matchesSearch = !searchQuery || 
-            tweet.text_analyzed.toLowerCase().includes(searchQuery) ||
-            tweet.author.toLowerCase().includes(searchQuery) ||
-            tweet.summary.toLowerCase().includes(searchQuery);
+            (tweet.text_analyzed || '').toLowerCase().includes(searchQuery) ||
+            (tweet.author || '').toLowerCase().includes(searchQuery) ||
+            (tweet.opinion_type || '').toLowerCase().includes(searchQuery);
         
         const matchesSentiment = !sentimentFilter || tweet.sentiment === sentimentFilter;
         
