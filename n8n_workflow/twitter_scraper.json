@@ -1,0 +1,135 @@
+{
+  "name": "twitter_scraper",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/kaitoeasyapi~twitter-x-data-tweet-scraper-pay-per-result-cheapest/run-sync-get-dataset-items?token={{$env.APIFY_API_TOKEN}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"searchTerms\": [\n    \"Purbaya ekonomi\", \n    \"Purbaya kinerja\", \n    \"Purbaya kebijakan\", \n    \"Purbaya Yudhi Sadewa\",\n    \"Pak Purbaya\"\n  ],\n  \"tweetsLanguage\": \"id\",\n  \"maxItems\": 20,\n  \"sort\": \"Latest\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "68fed23c-12c9-4aea-a30d-7fd46b0d4bcf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst validTweets = [];\n\nfor (const item of items) {\n  const tweet = item.json;\n  \n  // Lewati jika ini adalah mock data\n  if (tweet.id === -1 || tweet.id === \"-1\" || (tweet.text && tweet.text.includes(\"KaitoEasyAPI\"))) {\n    continue;\n  }\n\n  if (tweet.text) {\n    const rawUrl = tweet.twitterUrl || tweet.url || '';\n    const extractedId = tweet.id || rawUrl.split('/').pop() || Math.random().toString();\n    \n    // Ekstrak username dari URL (format: https://twitter.com/username/status/...)\n    let username = 'unknown';\n    if (rawUrl.includes('/status/')) {\n      username = rawUrl.split('/status/')[0].split('/').pop();\n    }\n\n    validTweets.push({\n      json: {\n        tweet_id: extractedId.toString(),\n        text: tweet.text,\n        author_username: username,\n        tweet_url: rawUrl,\n        created_at: tweet.createdAt || new Date().toISOString(),\n        likes: tweet.likeCount || 0,\n        retweets: tweet.retweetCount || 0,\n        crawled_at: new Date().toISOString()\n      }\n    });\n  }\n}\n\nreturn validTweets;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "25b3a4e4-d32f-4742-aa75-b7589dd2cd37",
+      "name": "Parse Response"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "tweets",
+        "updateKey": "tweet_id",
+        "fields": "tweet_id,text,author_username,tweet_url,created_at,likes,retweets,crawled_at",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "40defe03-6e2a-422c-b009-0c8d0a97064f",
+      "name": "Update documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "c64kzaBkgjztHina",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "020d6ceb-865c-416a-9552-a9cfd1cba902",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Update documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "acd8b6d0-c5b0-4e39-ad2d-3a1c7b466e76",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "307543149c553cd38bf8647e2d7ba2c8934cbae72f22ec9786d0d573d3780bfd"
+  },
+  "id": "m4gGUyJMyvEKinnp",
+  "tags": []
+}

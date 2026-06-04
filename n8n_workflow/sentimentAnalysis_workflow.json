@@ -1,0 +1,234 @@
+{
+  "name": "sentimentAnalysis_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "sentiment_analysis",
+        "updateKey": "tweet_id",
+        "fields": "tweet_id,text_analyzed,author,tweet_url,tweet_created_at,sentiment,emotion,support_score,key_topics,opinion_type,analyzed_at",
+        "upsert": true,
+        "options": {}
+      },
+      "id": "13c9626c-d3c7-4e2b-a37c-d5efa5ccb6f3",
+      "name": "Save Sentiment to MongoDB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        304
+      ],
+      "credentials": {
+        "mongoDb": {
+          "id": "c64kzaBkgjztHina",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const inputData = $input.item.json;\nlet rawText = '';\n\n// 1. Ambil teks dari struktur node\nif (inputData.content && inputData.content.parts && inputData.content.parts[0]) {\n    rawText = inputData.content.parts[0].text;\n} else if (inputData.text) {\n    rawText = inputData.text;\n} else {\n    rawText = JSON.stringify(inputData);\n}\n\nlet aiData = {\n    sentiment: 'Neutral',\n    emotion: 'Neutral',\n    support_score: 50,\n    key_topics: [],\n    opinion_type: 'General'\n};\n\ntry {\n    // 2. Parse JSON utuh\n    const jsonMatch = rawText.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n        aiData = (new Function('return ' + jsonMatch[0]))();\n    } else {\n        throw new Error(\"Tidak ada kurung kurawal\");\n    }\n} catch (e) {\n    // 3. ULTIMATE FALLBACK: Ekstrak paksa pakai Regex tanpa summary\n    const sentMatch = rawText.match(/\"sentiment\"\\s*:\\s*\"([^\"]+)\"/i);\n    if (sentMatch) aiData.sentiment = sentMatch[1];\n\n    const emoMatch = rawText.match(/\"emotion\"\\s*:\\s*\"([^\"]+)\"/i);\n    if (emoMatch) aiData.emotion = emoMatch[1];\n    \n    const scoreMatch = rawText.match(/\"support_score\"\\s*:\\s*(\\d+)/i);\n    if (scoreMatch) aiData.support_score = parseInt(scoreMatch[1]);\n    \n    const typeMatch = rawText.match(/\"opinion_type\"\\s*:\\s*\"([^\"]+)\"/i);\n    if (typeMatch) aiData.opinion_type = typeMatch[1];\n}\n\n// 4. Ambil data asli tweet\nlet originalTweet = {};\ntry {\n    originalTweet = $('Loop Tweets').item.json;\n} catch (err) {\n    originalTweet = $input.item.json; \n}\n\n// 5. Gabungkan dan kirim ke MongoDB (bersih tanpa summary)\nreturn {\n    json: {\n        tweet_id: originalTweet.tweet_id || Math.random().toString(),\n        text_analyzed: originalTweet.text || originalTweet.text_analyzed || '',\n        author: originalTweet.author_username || originalTweet.author || 'unknown',\n        tweet_url: originalTweet.tweet_url || '',\n        tweet_created_at: originalTweet.created_at || originalTweet.tweet_created_at || new Date().toISOString(),\n        \n        sentiment: aiData.sentiment || 'Neutral',\n        emotion: aiData.emotion || 'Neutral',\n        support_score: parseInt(aiData.support_score) || 50,\n        key_topics: Array.isArray(aiData.key_topics) ? aiData.key_topics : [],\n        opinion_type: aiData.opinion_type || 'General',\n        analyzed_at: new Date().toISOString()\n    }\n};"
+      },
+      "id": "aa51b50a-935e-407c-859e-80ee902c4eb6",
+      "name": "Parse Gemini Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        304
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        288
+      ],
+      "id": "884565c9-daa6-4c87-9beb-dec36ef5111a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "collection": "tweets",
+        "options": {
+          "skip": 88
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -1280,
+        288
+      ],
+      "id": "9cd3b839-fdb8-488b-8f41-5a64b0022c2a",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "c64kzaBkgjztHina",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        432
+      ],
+      "id": "01c45181-3aba-4784-a7e0-fb525f038f83",
+      "name": "Wait",
+      "webhookId": "b90b96d9-48c9-4c47-9a96-4ced4d25e001",
+      "retryOnFail": true,
+      "maxTries": 4,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1040,
+        288
+      ],
+      "id": "ac04279b-f592-4566-b270-f77dd49dfcd1",
+      "name": "Loop Tweets"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Analisis teks tweet berikut mengenai Purbaya Yudhi Sadewa.\nEkstrak informasi sentimen, emosi, tingkat dukungan, dan key topics.\nKamu WAJIB mengembalikan output HANYA dalam format JSON valid.\n\n{\n  \"sentiment\": \"Positive\",\n  \"emotion\": \"Supportive\",\n  \"support_score\": 85,\n  \"key_topics\": [\"saham\", \"IHSG\"],\n  \"opinion_type\": \"Praise\"\n}\n\nTeks Tweet: {{ $json.text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        288
+      ],
+      "id": "3d380eb2-1cfe-4bb0-bbf8-42470ca526d5",
+      "name": "Message a model",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5ePmMK2dlhRsYP4S",
+          "name": "Google Gemini(PaLM) Api account 9"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Save Sentiment to MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Gemini Response": {
+      "main": [
+        [
+          {
+            "node": "Save Sentiment to MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Tweets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Tweets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Tweets": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Parse Gemini Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b6ddbce0-9e6d-48aa-b64d-ea6cf161a6c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "307543149c553cd38bf8647e2d7ba2c8934cbae72f22ec9786d0d573d3780bfd"
+  },
+  "id": "e4n0XYgHECOUFaOn",
+  "tags": []
+}
