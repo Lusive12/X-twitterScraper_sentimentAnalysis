@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Sentimen Purbaya Yudhi Sadewa</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>📊 Analisis Sentimen</h1>
+                <p>Opini Publik tentang Purbaya Yudhi Sadewa</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Total Tweet</span>
+                    <span class="stat-value" id="total-tweets">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Analisis Selesai</span>
+                    <span class="stat-value" id="analyzed-tweets">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Skor Dukungan Rata-rata</span>
+                    <span class="stat-value" id="avg-support">--</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Sentiment Distribution Row -->
+        <section class="dashboard-row">
+            <div class="card">
+                <h2>Distribusi Sentimen</h2>
+                <div class="chart-container">
+                    <canvas id="sentiment-pie-chart"></canvas>
+                </div>
+                <div class="chart-legend" id="sentiment-legend"></div>
+            </div>
+
+            <div class="card">
+                <h2>Skor Dukungan</h2>
+                <div class="score-stats">
+                    <div class="score-item">
+                        <span class="score-label">Tertinggi</span>
+                        <span class="score-value" id="max-support">--</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">Terendah</span>
+                        <span class="score-value" id="min-support">--</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">Rata-rata</span>
+                        <span class="score-value" id="avg-support-detail">--</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="support-histogram"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emotion & Topics Row -->
+        <section class="dashboard-row">
+            <div class="card">
+                <h2>Emosi Publik</h2>
+                <div class="chart-container">
+                    <canvas id="emotion-bar-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Topik Utama</h2>
+                <div class="topics-list" id="topics-list">
+                    <p class="loading">Memuat data...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Opinion Types Row -->
+        <section class="dashboard-row full-width">
+            <div class="card">
+                <h2>Tipe Opini</h2>
+                <div class="chart-container">
+                    <canvas id="opinion-bar-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tweets Table -->
+        <section class="card full-width">
+            <div class="table-controls">
+                <h2>Daftar Tweet Teranalisis</h2>
+                <div class="search-filter">
+                    <input type="text" id="search-input" placeholder="🔍 Cari tweet atau author..." class="search-box">
+                    <select id="sentiment-filter" class="filter-select">
+                        <option value="">Semua Sentimen</option>
+                        <option value="Positive">Positif</option>
+                        <option value="Neutral">Netral</option>
+                        <option value="Negative">Negatif</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="tweets-table">
+                    <thead>
+                        <tr>
+                            <th>Tweet</th>
+                            <th>Author</th>
+                            <th>Sentimen</th>
+                            <th>Emosi</th>
+                            <th>Skor</th>
+                            <th>Topik</th>
+                            <th>Opini</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tweets-tbody">
+                        <tr><td colspan="7" class="loading">Memuat tweet...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <button id="prev-page" class="btn-pagination">← Sebelumnya</button>
+                <span id="page-info">Halaman 1</span>
+                <button id="next-page" class="btn-pagination">Berikutnya →</button>
+            </div>
+        </section>
+
+        <!-- Data Status -->
+        <section class="card full-width info-section">
+            <h3>ℹ️ Informasi Dataset</h3>
+            <p id="data-status">Dataset belum dimuat. Pastikan file <code>data/sentiment_data.json</code> tersedia.</p>
+            <p class="timestamp">Last updated: <span id="last-update">--</span></p>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2024 Pipeline Analisis Sentimen Purbaya Yudhi Sadewa | Powered by Google Gemini & MongoDB</p>
+        <p><a href="https://github.com" target="_blank">GitHub Repository</a></p>
+    </footer>
+
+    <script src="js/chart-config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
