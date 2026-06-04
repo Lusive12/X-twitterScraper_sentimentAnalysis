@@ -377,17 +377,17 @@ Distributed under the MIT License. Lihat `LICENSE` file untuk detail.
 Pertanyaan atau issues? 
 
 - 📧 Email: [rendylexxyk12@gmail.com](mailto:rendylexxyk12@gmail.com)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/sentiment-pipeline/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/sentiment-pipeline/discussions)
+- 🐛 Issues: [GitHub Issues](https://github.com/Lusive12/X-twitterScraper_sentimentAnalysis/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/Lusive12/X-twitterScraper_sentimentAnalysis/discussions)
 
 ---
 
 <div align="center">
 
-Made with ❤️ by [Your Name]
+Made by [Rendy Lexxy Kurniawan]
 
 ⭐ Jika project ini helpful, silakan star repository!
 
-[Fork](https://github.com/yourusername/sentiment-pipeline/fork) | [Star](https://github.com/yourusername/sentiment-pipeline) | [Watch](https://github.com/yourusername/sentiment-pipeline/subscription)
+[Fork](https://github.com/Lusive12/X-twitterScraper_sentimentAnalysis/fork) | [Star](https://github.com/Lusive12/X-twitterScraper_sentimentAnalysis) | [Watch](https://github.com/Lusive12/X-twitterScraper_sentimentAnalysis/subscription)
 
 </div>
