@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load Data from JSON
 async function loadData() {
     try {
-        const response = await fetch('data/sentiment_data.json');
+        const response = await fetch('data/sentiment_analysis.json');
         
         if (!response.ok) {
             throw new Error('Data file not found. Run: npm run export-data');
