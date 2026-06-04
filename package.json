@@ -1,0 +1,41 @@
+{
+  "name": "sentiment-pipeline-purbaya",
+  "version": "1.0.0",
+  "description": "Pipeline Analisis Sentimen Purbaya Yudhi Sadewa dari Twitter/X",
+  "main": "export-data.js",
+  "type": "module",
+  "scripts": {
+    "export-data": "node export-data.js",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "dev": "echo 'Open http://localhost:5678 for n8n and http://localhost:8081 for Mongo Express'",
+    "test": "node test-data.js"
+  },
+  "keywords": [
+    "sentiment-analysis",
+    "twitter",
+    "n8n",
+    "mongodb",
+    "gemini",
+    "purbaya",
+    "lps"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "mongodb": "^6.0.0",
+    "dotenv": "^16.0.0",
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/sentiment-pipeline.git"
+  }
+}
